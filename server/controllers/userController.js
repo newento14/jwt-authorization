@@ -6,8 +6,8 @@ class UserController {
     async registration(req, res, next){
         try {
             const errors = validationResult(req);
-            if (errors) {
-                return next(serverError.BadRequest("Invalid data",errors.array()))
+            if (!errors.isEmpty()) {
+                return next(serverError.BadRequest('Validation error', errors.array()))
             }
             const {username,email, password} = req.body;
             console.log(req.body);

@@ -1,34 +1,55 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import {BrowserRouter, Route, Routes} from "react-router-dom";
+import Login from "./components/login.tsx";
+import {useEffect} from "react";
+import userServices from "./services/userServices.ts";
+import {useDispatch} from "react-redux";
+import {useTypedSelector} from "./hooks/useTypedSelector.ts";
+import Registration from "./components/registration.tsx";
+import Header from "./components/header.tsx";
+import './styles/index.css'
+import Loader from "./UI/loader/loader.tsx";
+import Home from "./pages/home.tsx";
+
 
 function App() {
-  const [count, setCount] = useState(0)
+    const dispatch = useDispatch();
+    const isAuth = useTypedSelector(x => x.user.isAuth);
+    const isLoading = useTypedSelector(x => x.user.isLoading);
 
-  return (
-    <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+
+    useEffect(() => {
+        if(localStorage.getItem('token')) {
+            (userServices.auth())(dispatch);
+        }
+    }, []);
+
+    if (isLoading) {
+        return <Loader />
+    }
+
+    const notAuthRoutes = (
+        <Routes>
+            <Route path="/home" element={<Home />} />
+            <Route path="/registration" element={<div className="center"> <Registration /> </div>} />
+            <Route path="/login" element={<div className="center"> <Login /> </div>} />
+        </Routes>
+    );
+
+    const AuthRoutes = (
+        <Routes>
+            <Route path="/problems" element={<Home />} />
+        </Routes>
+    );
+
+    return (
+      <BrowserRouter>
+          <Header />
+          {isAuth
+              ? AuthRoutes
+              : notAuthRoutes
+          }
+
+      </BrowserRouter>
   )
 }
 
